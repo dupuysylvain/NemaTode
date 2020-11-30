@@ -19,7 +19,6 @@ namespace nmea {
 		public:
 			std::string message;
 			std::string name;
-			char checksum;
 			NMEACommand();
 			virtual ~NMEACommand();
 			virtual std::string toString();
@@ -106,7 +105,7 @@ namespace nmea {
 				messageID = NMEASentence::Unknown;
 				mode = QueryRateMode::SETRATE;
 				rate = 0;
-				checksumEnable = 1;
+				checksumEnable = 0;
 			};
 			virtual std::string toString();
 		};

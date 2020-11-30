@@ -41,10 +41,6 @@ public:
 	std::string text;			//whole plaintext of the received command
 	std::string name;			//name of the command
 	std::vector<std::string> parameters;	//list of parameters from the command
-	std::string checksum;
-	bool checksumIsCalculated;
-	uint8_t parsedChecksum;
-	uint8_t calculatedChecksum;
 
 	enum MessageID {		// These ID's are according to NMEA standard.
 		Unknown = -1,
@@ -60,9 +56,7 @@ public:
 	NMEASentence();
 	virtual ~NMEASentence();
 
-	bool checksumOK() const;
 	bool valid() const;
-
 };
 
 
@@ -113,9 +107,6 @@ public:
 
 	// This function expects the data to be a single line with an actual sentence in it, else it throws an error.
 	void readSentence	(std::string cmd);				// called when parser receives a sentence from the byte stream. Can also be called by user to inject sentences.
-
-	static uint8_t calculateChecksum(std::string);		// returns checksum of string -- XOR
-
 };
 
 }

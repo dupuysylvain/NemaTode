@@ -91,7 +91,9 @@ void GPSService::attachToParser(NMEAParser& _parser){
 	_parser.setSentenceHandler("GPVTG", [this](const NMEASentence& nmea){
 		this->read_GPVTG(nmea);
 	});
-
+    _parser.setSentenceHandler("GNRMC", [this](const NMEASentence& nmea){
+        this->read_GPRMC(nmea);
+    });
 }
 
 
@@ -135,9 +137,6 @@ void GPSService::read_GPGGA(const NMEASentence& nmea){
 	*/
 	try
 	{
-		if (!nmea.checksumOK()){
-			throw NMEAParseError("Checksum is invalid!");
-		}
 
 		if (nmea.parameters.size() < 14){
 			throw NMEAParseError("GPS data is missing parameters.");
@@ -230,9 +229,6 @@ void GPSService::read_GPGSA(const NMEASentence& nmea){
 
 	try
 	{
-		if (!nmea.checksumOK()){
-			throw NMEAParseError("Checksum is invalid!");
-		}
 
 		if (nmea.parameters.size() < 17){
 			throw NMEAParseError("GPS data is missing parameters.");
@@ -307,9 +303,6 @@ void GPSService::read_GPGSV(const NMEASentence& nmea){
 
 	try
 	{
-		if (!nmea.checksumOK()){
-			throw NMEAParseError("Checksum is invalid!");
-		}
 
 		// can't do this check because the length varies depending on satallites...
 		//if(nmea.parameters.size() < 18){
@@ -398,9 +391,6 @@ void GPSService::read_GPRMC(const NMEASentence& nmea){
 
 	try
 	{
-		if (!nmea.checksumOK()){
-			throw NMEAParseError("Checksum is invalid!");
-		}
 
 		if (nmea.parameters.size() < 11){
 			throw NMEAParseError("GPS data is missing parameters.");
@@ -482,9 +472,6 @@ void GPSService::read_GPVTG(const NMEASentence& nmea){
 
 	try
 	{
-		if (!nmea.checksumOK()){
-			throw NMEAParseError("Checksum is invalid!");
-		}
 
 		if (nmea.parameters.size() < 8){
 			throw NMEAParseError("GPS data is missing parameters.");

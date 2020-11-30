@@ -44,7 +44,7 @@ int main(int argc, char** argv){
 
 	// (optional) - Handle events when the parser receives each sentence
 	parser.onSentence += [&gps](const NMEASentence& n){
-		cout << "Received " << (n.checksumOK() ? "good" : "bad") << " GPS Data: " << n.name << endl;
+		cout << "Received " << " GPS Data: " << n.name << endl;
 	};
 
 
@@ -175,13 +175,6 @@ int main(int argc, char** argv){
 	NMEAParser test_parser;
 	test_parser.onSentence += [&cmd1, &cmd2, &cmd3, &cmd4](const NMEASentence& n){
 		cout << "Received:  " << n.text;
-		
-		if (!n.checksumOK()){
-			cout << "\t\tChecksum FAIL!" << endl;
-		}
-		else {
-			cout << "\t\tChecksum PASS!" << endl;
-		}
 	};
 
 	cout << "-------- NMEA Command Generation --------" << endl;

@@ -42,9 +42,6 @@ std::string NMEAParseError::what(){
 
 NMEASentence::NMEASentence() 
 : isvalid(false)
-, checksumIsCalculated(false)
-, calculatedChecksum(0)
-, parsedChecksum(0)
 { }
 
 NMEASentence::~NMEASentence()
@@ -53,14 +50,6 @@ NMEASentence::~NMEASentence()
 bool NMEASentence::valid() const {
 	return isvalid;
 }
-
-bool NMEASentence::checksumOK() const {
-	return (checksumIsCalculated)
-		&&
-		(parsedChecksum == calculatedChecksum);
-}
-
-
 
 // true if the text contains a non-alpha numeric value
 bool hasNonAlphaNum(string txt){
@@ -302,25 +291,6 @@ void NMEAParser::readSentence(std::string cmd){
 
 }
 
-// takes the string *between* the '$' and '*' in nmea sentence,
-// then calculates a rolling XOR on the bytes
-uint8_t NMEAParser::calculateChecksum(string s){
-	uint8_t checksum = 0;
-	for (const char i : s){
-		checksum = checksum ^ i;
-	}
-
-	// will display the calculated checksum in hex
-	//if(log)
-	//{
-	//	ios_base::fmtflags oldflags = cout.flags();
-	//	cout << "NMEA parser Info: calculated CHECKSUM for \""  << s << "\": 0x" << std::hex << (int)checksum << endl;
-	//	cout.flags(oldflags);  //reset
-	//}
-	return checksum;
-}
-
-
 void NMEAParser::parseText(NMEASentence& nmea, string txt){
 
 	if (txt.empty()){
@@ -346,20 +316,6 @@ void NMEAParser::parseText(NMEASentence& nmea, string txt){
 
 	// Get rid of data up to last'$'
 	txt = txt.substr(startbyte + 1);
-
-
-	// Look for checksum
-	size_t checkstri = txt.find_last_of('*');
-	bool haschecksum = checkstri != string::npos;
-	if (haschecksum){
-		// A checksum was passed in the message, so calculate what we expect to see
-		nmea.calculatedChecksum = calculateChecksum(txt.substr(0, checkstri));
-	}
-	else
-	{
-		// No checksum is only a warning because some devices allow sending data with no checksum.
-		onWarning(nmea, "No checksum information provided. Could not find '*'.");
-	}
 
 	// Handle comma edge cases
 	size_t comma = txt.find(',');
@@ -415,62 +371,16 @@ void NMEAParser::parseText(NMEASentence& nmea, string txt){
 		nmea.parameters.push_back(s);
 	}
 
-
 	//above line parsing does not add a blank parameter if there is a comma at the end...
 	// so do it here.
 	if (*(txt.end() - 1) == ','){
-
-		// supposed to have checksum but there is a comma at the end... invalid
-		if (haschecksum){
-			nmea.isvalid = false;
-			return;
-		}
-
 		//cout << "NMEA parser Warning: extra comma at end of sentence, but no information...?" << endl;		// it's actually standard, if checksum is disabled
 		nmea.parameters.push_back("");
-
-		stringstream sz;
-		sz << "Found " << nmea.parameters.size() << " parameters.";
-		onInfo(nmea, sz.str());
-
 	}
-	else
-	{
-		stringstream sz;
-		sz << "Found " << nmea.parameters.size() << " parameters.";
-		onInfo(nmea, sz.str());
-
-		//possible checksum at end...
-		size_t endi = nmea.parameters.size() - 1;
-		size_t checki = nmea.parameters[endi].find_last_of('*');
-		if (checki != string::npos){
-			string last = nmea.parameters[endi];
-			nmea.parameters[endi] = last.substr(0, checki);
-			if (checki == last.size() - 1){
-				onError(nmea, "Checksum '*' character at end, but no data.");
-			}
-			else{
-				nmea.checksum = last.substr(checki + 1, last.size() - checki);		//extract checksum without '*'
-
-				onInfo(nmea, string("Found checksum. (\"*") + nmea.checksum + "\")");
-
-				try
-				{
-					nmea.parsedChecksum = (uint8_t)parseInt(nmea.checksum, 16);
-					nmea.checksumIsCalculated = true;
-				}
-				catch( NumberConversionError& )
-				{
-					onError(nmea, string("parseInt() error. Parsed checksum string was not readable as hex. (\"") +  nmea.checksum + "\")");
-				}
-				
-				onInfo(nmea, string("Checksum ok? ") + (nmea.checksumOK() ? "YES" : "NO") + "!");
-				
-
-			}
-		}
-	}
-
+	
+    stringstream sz;
+    sz << "Found " << nmea.parameters.size() << " parameters.";
+    onInfo(nmea, sz.str());
 
 	for (size_t i = 0; i < nmea.parameters.size(); i++){
 		if (!validParamChars(nmea.parameters[i])){

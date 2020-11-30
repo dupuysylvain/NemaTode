@@ -26,17 +26,14 @@ string NMEACommand::toString(){
 string NMEACommand::addChecksum(std::string s){
 	stringstream zz;
 	zz << name << "," << s;
-	checksum = NMEAParser::calculateChecksum(zz.str());
 
 	stringstream ss;
 	ios_base::fmtflags oldflags = ss.flags();
-	ss << "$" << zz.str() << "*" << hex << uppercase << internal << setfill('0') << setw(2) << (int)checksum << "\r\n";
+	ss << "$" << zz.str() << "*" << hex << uppercase << internal << setfill('0') << setw(2) << "\r\n";
 	ss.flags(oldflags);  //reset
 
 	return ss.str();
 };
-
-
 
 		/*
 		// $PSRF100,0,9600,8,1,0*0C
