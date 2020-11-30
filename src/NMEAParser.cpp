@@ -382,7 +382,7 @@ void NMEAParser::parseText(NMEASentence& nmea, string txt){
     sz << "Found " << nmea.parameters.size() << " parameters.";
     onInfo(nmea, sz.str());
 
-	for (size_t i = 0; i < nmea.parameters.size(); i++){
+	/*for (size_t i = 0; i < nmea.parameters.size(); i++){
 		if (!validParamChars(nmea.parameters[i])){
 			nmea.isvalid = false;
 			stringstream ss;
@@ -390,7 +390,7 @@ void NMEAParser::parseText(NMEASentence& nmea, string txt){
 			onError(nmea, ss.str() );
 			break;
 		}
-	}
+	}*/
 
 
 	nmea.isvalid = true;
